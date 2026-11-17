@@ -1,4 +1,4 @@
-name: Build APK
+name: Build APK + Windows EXE
 on:
   workflow_dispatch:
   push:
@@ -35,3 +35,31 @@ jobs:
         with:
           name: loco-n-drive-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+  desktop:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Safety check - banned models must not exist
+        run: |
+          for m in bmw golf mustang idbuzz tanker; do
+            if ls assets/$m.glb assets_lite/$m.glb 2>/dev/null; then echo "BANNED MODEL $m FOUND"; exit 1; fi
+          done
+      - name: Build Windows installer
+        run: |
+          test -n "$SITE_URL" || { echo "SITE_URL variable missing"; exit 1; }
+          mkdir -p desktop/game
+          cp index.html race.js tablet.js touch.js controller.html sw.js logo.png desktop/game/
+          for d in assets assets_lite sounds lib; do cp -r "$d" desktop/game/; done
+          echo "{\"url\":\"$SITE_URL\"}" > desktop/site.json
+          cd desktop
+          npm install
+          npx electron-builder --win nsis --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: loco-n-drive-windows-exe
+          path: desktop/dist/*.exe

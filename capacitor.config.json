@@ -1,0 +1,21 @@
+{
+ "appId": "com.roadready.app",
+ "appName": "Loco ’n’ Drive 3D",
+ "webDir": "www",
+ "server": {
+  "url": "https://YOUR-SITE.pages.dev",
+  "cleartext": false
+ },
+ "android": {
+  "allowMixedContent": false
+ },
+ "plugins": {
+  "SplashScreen": {
+   "launchShowDuration": 2500,
+   "launchAutoHide": true,
+   "backgroundColor": "#0b1d3a",
+   "androidScaleType": "CENTER_CROP",
+   "showSpinner": false
+  }
+ }
+}

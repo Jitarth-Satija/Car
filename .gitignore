@@ -1,0 +1,20 @@
+node_modules/
+android/
+www/
+*.apk
+*.aab
+.DS_Store
+Thumbs.db
+.gradle/
+local.properties
+# PRIVATE: non-commercial / not-allowed models must never be committed
+assets/bmw.glb
+assets/golf.glb
+assets/mustang.glb
+assets/idbuzz.glb
+assets/tanker.glb
+assets_lite/bmw.glb
+assets_lite/golf.glb
+assets_lite/mustang.glb
+assets_lite/idbuzz.glb
+assets_lite/tanker.glb

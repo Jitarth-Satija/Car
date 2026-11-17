@@ -1,0 +1,16 @@
+{
+  "name": "loco-n-drive-3d",
+  "version": "1.0.0",
+  "description": "Loco n Drive 3D desktop app",
+  "author": "Loco n Drive",
+  "main": "main.js",
+  "devDependencies": { "electron": "^33.0.0", "electron-builder": "^25.1.8" },
+  "build": {
+    "appId": "com.roadready.desktop",
+    "productName": "Loco n Drive 3D",
+    "files": ["main.js", "site.json", "icon.png"],
+    "extraResources": [{ "from": "game", "to": "game" }],
+    "win": { "target": "nsis", "icon": "icon.png" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  }
+}

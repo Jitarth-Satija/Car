@@ -191,7 +191,7 @@ function splitWheels(root,S){root.updateMatrixWorld(true);const W=[];
    tri.forEach((q,i)=>{P[i*3]=pw[q*3]-w.c.x;P[i*3+1]=pw[q*3+1]-w.c.y;P[i*3+2]=pw[q*3+2]-w.c.z;if(nor){v1.fromBufferAttribute(nor,q).applyMatrix3(NM).normalize();N[i*3]=v1.x;N[i*3+1]=v1.y;N[i*3+2]=v1.z}if(uv){U[i*2]=uv.getX(q);U[i*2+1]=uv.getY(q)}});
    const wg=new THREE.BufferGeometry();wg.setAttribute('position',new THREE.BufferAttribute(P,3));wg.setAttribute('normal',new THREE.BufferAttribute(N,3));wg.setAttribute('uv',new THREE.BufferAttribute(U,2));w.spin.add(new THREE.Mesh(wg,o.material))})}
  return{root,wh:W}}
-function dimsOf(sp){const key=Object.keys(MODELS).find(k=>MODELS[k]===sp)||'fiat',d=PR[key].userData;return{w:d.w,l:d.l}}
+function dimsOf(sp){const key=Object.keys(MODELS).find(k=>MODELS[k]===sp)||'oldcar',d=PR[key].userData;return{w:d.w,l:d.l}}
 /* rectangle test: player car footprint vs parked car footprint (no false hits when passing close without touching) */
 function parkHit(b,x,z,hd){
  const P=dimsOf(CARS[Lv.car]),pw=P.w*.5-.05,pl=P.l*.5-.05,bw=(b.w||1.8)*.5-.05,bl=(b.l||4.3)*.5-.05;
@@ -201,7 +201,7 @@ function parkHit(b,x,z,hd){
  for(const q of pts(x,z,hd,pw,pl))if(inside(0,0,0,b.x,b.z,b.a,bw,bl,q[0],q[1]))return true;
  for(const q of pts(b.x,b.z,b.a,bw,bl))if(inside(0,0,0,x,z,hd,pw,pl,q[0],q[1]))return true;
  return false}
-function mkCar(sp,wheels){const key=Object.keys(MODELS).find(k=>MODELS[k]===sp)||'fiat',p=PR[key],d=p.userData,G=new THREE.Group();
+function mkCar(sp,wheels){const key=Object.keys(MODELS).find(k=>MODELS[k]===sp)||'oldcar',p=PR[key],d=p.userData,G=new THREE.Group();
  if(wheels&&WSPEC[key]){const sw=splitWheels(p.clone(true),WSPEC[key]);G.add(sw.root);G.wh=sw.wh}else G.add(p.clone(true));const w=d.w,l=d.l,h=d.h;
  const u={hl:new THREE.MeshBasicMaterial({color:0x777766}),br:new THREE.MeshBasicMaterial({color:0x550000}),fl:new THREE.MeshBasicMaterial({color:0x553300}),fr:new THREE.MeshBasicMaterial({color:0x553300}),rl:new THREE.MeshBasicMaterial({color:0x553300}),rr:new THREE.MeshBasicMaterial({color:0x553300})};
  const B=(a,b,c,m,x,y,z)=>{const q=new THREE.Mesh(new THREE.BoxGeometry(a,b,c),m);q.position.set(x,y,z);G.add(q)};
@@ -243,11 +243,11 @@ let BAL=STO.g('rr3bal')===null?null:(+STO.g('rr3bal')||0);
 const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
 function setBal(v){BAL=Math.max(0,Math.round(v));STO.s('rr3bal',BAL)}
 /* cars: cheapest = free at start, others from 20,000, faster = dearer */
-const CARSHOP={oldcar:{top:200,price:2000},fiat:{top:215,price:0},hotrod:{top:230,price:20000},concept001:{top:255,price:30000},i8:{top:285,price:45000},corvette:{top:315,price:60000},concept037:{top:340,price:80000},audi:{top:360,price:100000},concept040:{top:370,price:110000},hoonicorn:{top:380,price:120000},mclaren:{top:400,price:150000}};
+const CARSHOP={oldcar:{top:200,price:0},fiat:{top:215,price:15000},hotrod:{top:230,price:20000},concept001:{top:255,price:30000},i8:{top:285,price:45000},corvette:{top:315,price:60000},concept037:{top:340,price:80000},audi:{top:360,price:100000},concept040:{top:370,price:110000},hoonicorn:{top:380,price:120000},mclaren:{top:400,price:150000}};
 const TRSHOP={engine:{price:0,n:'Light engine only'},goods:{price:20000,n:'Goods train (engine + wagons)'},express:{price:30000,n:'Express (engine + coaches)'},rajdhani:{price:50000,n:'Rajdhani Express (engine + coaches)'},shatabdi:{price:70000,n:'Shatabdi Express (engine + coaches)'},vande:{price:150000,n:'Vande Bharat Express (full train set)'}};
 function ownedList(key,def){let a=[];try{a=JSON.parse(STO.g(key)||'[]')}catch(e){}if(!Array.isArray(a))a=[];const _ok=key=='rr3cars'?CARSHOP:TRSHOP;a=a.filter(k=>_ok.hasOwnProperty(k));try{STO.s(key,JSON.stringify(a))}catch(e){}if(!a.includes(def))a.unshift(def);return a}
-let OWNC=ownedList('rr3cars','fiat'),SELC=STO.g('rr3car'),OWNT=ownedList('rr3trn','engine'),SELT=STO.g('rr3trs');
-if(!OWNC.includes(SELC))SELC='fiat';if(!OWNT.includes(SELT))SELT='engine';
+let OWNC=ownedList('rr3cars','oldcar'),SELC=STO.g('rr3car'),OWNT=ownedList('rr3trn','engine'),SELT=STO.g('rr3trs');
+if(!OWNC.includes(SELC))SELC='oldcar';if(!OWNT.includes(SELT))SELT='engine';
 let net=0;
 let ren,sc,cam,car,U,spot,ai,rp,Lv,li,v,h,x,z,dl,t,fines,log,run,paused,cm,K={},cd,ts,hRef,turning,sigL,sigR,hz,hl,sigClear,wrongT,overT,stopT,nightT,offT,lastPh,AC,eo,eg,acc,thr,tmr;
 const RZ=2.5*BS;let wasTrk=false,rumT=0,engOn=0,belt=0,beltT=0,hintT=0,mapZ=1,G="N",begun,boomT,bmsg,bx,ovr,wipe,rainT,sigM,gates=[],train,planes=[],rainM,blk=[],bay,BCN,wasI,lb,pkT,trh,lim=50,eo2,ef,hn=[];

@@ -219,18 +219,18 @@ function mkSig(mats,plateMat){ // mats = [top(red),middle(yellow),bottom(green)]
  return g}
 
 const LV=[
-{n:'Day drive',d:'In-city: red lights, park in the bay',car:'fiat',ci:0,sky:0x9fd3ff,fog:0xbfe0f5,traffic:6,lim:50,hw:700,route:[[2,0],[2,1],[6,1],[6,0],[9,0],[9,1]]},
-{n:'Sunset + railway',d:'Cross the railway at the gate',car:'corvette',ci:1,sky:0xf2a65a,fog:0xf0c28a,sun:1,traffic:9,lim:50,hw:700,route:[[0,1],[1,1],[1,5],[6,5],[6,8],[10,8]]},
-{n:'Night city',d:'Headlights, indicators',car:'hoonicorn',ci:2,sky:0x0a1226,fog:0x0a1226,night:1,traffic:10,lim:50,hw:700,route:[[3,0],[3,2],[8,2],[8,0],[12,0],[12,2]]},
-{n:'Rain + reverse park',d:'Wipers on, reverse into the bay',car:'hotrod',ci:3,sky:0x6e7a86,fog:0x7a8692,rain:1,traffic:10,lim:50,hw:700,rev:1,route:[[0,1],[1,1],[1,6],[6,6],[6,7],[3,7]]},
-{n:'Rush hour south side',d:'Heavy traffic south of the railway',car:'audi',ci:4,sky:0x9fd3ff,fog:0xbfe0f5,traffic:14,lim:50,hw:700,route:[[1,0],[1,5],[4,5],[4,9],[10,9],[10,6]]},
-{n:'Night rain',d:'Rain at night, fast roads',car:'mclaren',ci:5,sky:0x0a1226,fog:0x10182a,night:1,rain:1,traffic:12,lim:60,hw:700,route:[[3,0],[3,1],[1,1],[1,7],[8,7],[8,10]]},
-{n:'Intercity 1',d:'Leave the city, take the Ring Road to the next city',car:'fiat',from:0,to:1,sky:0x9fd3ff,fog:0xbfe0f5,traffic:6,lim:50,hw:700,ci:0,ra:[[2,1],[2,0]],rb:[[4,0],[4,2],[8,2]]},
-{n:'Intercity sunset',d:'Two cities away along the Ring Road',car:'audi',to:3,ci:1,sky:0xf2a65a,fog:0xf0c28a,sun:1,traffic:8,lim:50,hw:700,ra:[[3,1],[3,0]],rb:[[6,0],[6,2],[10,2]]},
-{n:'Intercity night',d:'Night drive between cities',car:'hoonicorn',to:5,ci:2,sky:0x0a1226,fog:0x0a1226,night:1,traffic:8,lim:50,hw:700,ra:[[1,1],[1,0]],rb:[[8,0],[8,2],[5,2]]},
-{n:'Intercity rain',d:'Rain on the Ring Road',car:'hotrod',to:7,ci:4,sky:0x6e7a86,fog:0x7a8692,rain:1,traffic:8,lim:50,hw:700,ra:[[5,1],[5,0]],rb:[[2,0],[2,1],[7,1],[7,0]]},
-{n:'Long run',d:'Three cities away, park with care',car:'corvette',to:9,ci:6,sky:0x9fd3ff,fog:0xbfe0f5,traffic:10,lim:50,hw:700,rev:1,ra:[[4,1],[4,0]],rb:[[10,0],[10,2],[6,2]]},
-{n:'Final exam',d:'Night, rain, city to city',car:'mclaren',to:11,ci:8,sky:0x0a1226,fog:0x10182a,night:1,rain:1,traffic:12,lim:50,hw:700,ra:[[3,1],[3,0]],rb:[[6,0],[6,2],[12,2]]}];
+{n:'Day drive',d:'In-city: red lights, park in the bay',car:'fiat',ci:0,sky:0x9fd3ff,fog:0xbfe0f5,traffic:6,lim:50,hw:400,route:[[2,0],[2,1],[6,1],[6,0],[9,0],[9,1]]},
+{n:'Sunset + railway',d:'Cross the railway at the gate',car:'corvette',ci:1,sky:0xf2a65a,fog:0xf0c28a,sun:1,traffic:9,lim:50,hw:400,route:[[0,1],[1,1],[1,5],[6,5],[6,8],[10,8]]},
+{n:'Night city',d:'Headlights, indicators',car:'hoonicorn',ci:2,sky:0x0a1226,fog:0x0a1226,night:1,traffic:10,lim:50,hw:400,route:[[3,0],[3,2],[8,2],[8,0],[12,0],[12,2]]},
+{n:'Rain + reverse park',d:'Wipers on, reverse into the bay',car:'hotrod',ci:3,sky:0x6e7a86,fog:0x7a8692,rain:1,traffic:10,lim:50,hw:400,rev:1,route:[[0,1],[1,1],[1,6],[6,6],[6,7],[3,7]]},
+{n:'Rush hour south side',d:'Heavy traffic south of the railway',car:'audi',ci:4,sky:0x9fd3ff,fog:0xbfe0f5,traffic:14,lim:50,hw:400,route:[[1,0],[1,5],[4,5],[4,9],[10,9],[10,6]]},
+{n:'Night rain',d:'Rain at night, fast roads',car:'mclaren',ci:5,sky:0x0a1226,fog:0x10182a,night:1,rain:1,traffic:12,lim:60,hw:400,route:[[3,0],[3,1],[1,1],[1,7],[8,7],[8,10]]},
+{n:'Intercity 1',d:'Leave the city, take the Ring Road to the next city',car:'fiat',from:0,to:1,sky:0x9fd3ff,fog:0xbfe0f5,traffic:6,lim:50,hw:400,ci:0,ra:[[2,1],[2,0]],rb:[[4,0],[4,2],[8,2]]},
+{n:'Intercity sunset',d:'Two cities away along the Ring Road',car:'audi',to:3,ci:1,sky:0xf2a65a,fog:0xf0c28a,sun:1,traffic:8,lim:50,hw:400,ra:[[3,1],[3,0]],rb:[[6,0],[6,2],[10,2]]},
+{n:'Intercity night',d:'Night drive between cities',car:'hoonicorn',to:5,ci:2,sky:0x0a1226,fog:0x0a1226,night:1,traffic:8,lim:50,hw:400,ra:[[1,1],[1,0]],rb:[[8,0],[8,2],[5,2]]},
+{n:'Intercity rain',d:'Rain on the Ring Road',car:'hotrod',to:7,ci:4,sky:0x6e7a86,fog:0x7a8692,rain:1,traffic:8,lim:50,hw:400,ra:[[5,1],[5,0]],rb:[[2,0],[2,1],[7,1],[7,0]]},
+{n:'Long run',d:'Three cities away, park with care',car:'corvette',to:9,ci:6,sky:0x9fd3ff,fog:0xbfe0f5,traffic:10,lim:50,hw:400,rev:1,ra:[[4,1],[4,0]],rb:[[10,0],[10,2],[6,2]]},
+{n:'Final exam',d:'Night, rain, city to city',car:'mclaren',to:11,ci:8,sky:0x0a1226,fog:0x10182a,night:1,rain:1,traffic:12,lim:50,hw:400,ra:[[3,1],[3,0]],rb:[[6,0],[6,2],[12,2]]}];
 LV.forEach(l=>{l.rail=1;l.traffic=l.traffic*3+8});
 let sigT=[],sigK=[],gm2;
 function hitAI(o,q){const hs=Math.sin(Lh),hc=Math.cos(Lh);for(const k of[-1.2,0,1.2]){const px=Lx+hs*k,pz=Lz+hc*k;if(Math.abs(px-q.x)<(o.ax?2.2:.95)+.9&&Math.abs(pz-q.z)<(o.ax?.95:2.2)+.9)return true}return false}

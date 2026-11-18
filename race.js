@@ -132,7 +132,7 @@ const FLAME_G=()=>{const T=THREE,g=new T.Group(),m1=new T.MeshBasicMaterial({col
  for(const sx of[-1,1]){const c1=new T.Mesh(new T.ConeGeometry(.2,1.8,8),m1),c2=new T.Mesh(new T.ConeGeometry(.1,1.1,8),m2);for(const c of[c1,c2]){c.rotation.x=-Math.PI/2;c.position.set(sx*.4,.5,0)}c1.position.z=-.9;c2.position.z=-.55;g.add(c1,c2)}g.visible=false;return g};
 function addFlames(mesh,l){const f=FLAME_G();f.position.z=-l/2-.1;mesh.add(f);return f}
 function makeRacer(en){
- const me=en.id==S.cfg.myId,key=CARSHOP[en.car]?en.car:'fiat',sk=en.sk||1,top=topOf(key),dm=dimsOf(CARS[key]);
+ const me=en.id==S.cfg.myId,key=CARSHOP[en.car]?en.car:'oldcar',sk=en.sk||1,top=topOf(key),dm=dimsOf(CARS[key]);
  const c={id:en.id,name:en.name,car:key,ai:!!en.ai,me,remote:!en.ai&&!me,lane:en.lane,prog:-6,lat:lx(en.lane),v:0,dl:0,yaw:0,fin:null,out:0,dim:dm,top,
   vmax:top*sk/3.6,amax:(3.8+top/160)*sk,tprog:-6,tlat:lx(en.lane),tv:0,tdl:0,tyaw:0,latT:lx(en.lane),latV:0,cool:0,nit:0,nT:[],ph:Math.random()*6,wt:0,fl:0,hornT:0,pv:0,snd:null};
  if(c.ai){let tt=25+Math.random()*35;for(let k=0;k<12;k++){c.nT.push(tt);tt+=30+Math.random()*40}}
@@ -377,7 +377,7 @@ function hostConn(c){let joined=false;
   if(d.t=='join'&&!joined){const no=m=>{try{c.send({t:'no',m})}catch(e){}setTimeout(()=>c.close(),400)};
    if(!NW.open&&d.pw!==NW.pw)return no('Wrong password');if(S.active||NW.locked)return no('The race has already started');if(NW.players.length>=6)return no('Room is full (6 players)');
    if((+d.bal||0)<NW.fee)return no('Not eligible: you need at least '+inr(NW.fee)+' balance');
-   const id='p'+(++NW.seq);c.pid=id;NW.conns[id]=c;joined=true;NW.players.push({id,name:uniq(String(d.name||'Player').slice(0,14)),car:CARSHOP[d.car]?d.car:'fiat',pid:String(d.pid||'')});c.send({t:'ok',id,fee:NW.fee});bcast(listMsg());updLobby();vcSync()}
+   const id='p'+(++NW.seq);c.pid=id;NW.conns[id]=c;joined=true;NW.players.push({id,name:uniq(String(d.name||'Player').slice(0,14)),car:CARSHOP[d.car]?d.car:'oldcar',pid:String(d.pid||'')});c.send({t:'ok',id,fee:NW.fee});bcast(listMsg());updLobby();vcSync()}
   else if(d.t=='info'&&NW.open){try{c.send({t:'oinfo',name:NW.oname,state:NW.locked?'racing':'waiting',n:NW.players.length,cd:NW.cd||0,len:NW.len,city:CITYN[NW.city],fee:NW.fee})}catch(e){}}
   else if(!joined)return;
   else if(d.t=='st'){const o=S.cars.find(x=>x.id==c.pid);if(o&&!o.out){o.tprog=+d.p||0;o.tlat=+d.l||0;o.tv=+d.v||0;o.tdl=+d.d||0;o.tyaw=+d.y||0;o.nit=d.n?1:0;o.fl=d.f|0}Object.entries(NW.conns).forEach(([k,o2])=>{if(k!=c.pid)try{o2.send({t:'st',id:c.pid,p:d.p,l:d.l,v:d.v,d:d.d,y:d.y,n:d.n,f:d.f})}catch(e){}})}
@@ -485,9 +485,9 @@ function wDrop(id){const o=WD.remote[id];if(!o)return;try{sndStop(o)}catch(e){}t
 function wReset(){const had=WD.on||WD.busy||WD.peer;WD.sess++;WD.newc=0;WD.on=false;WD.busy=false;WD.claiming=0;for(const c of Object.values(WD.mesh))try{c.close()}catch(e){}try{WD.intro&&WD.intro!==WD.peer&&WD.intro.destroy()}catch(e){}try{WD.peer&&WD.peer.destroy()}catch(e){}
  WD.peer=null;WD.intro=null;WD.mesh={};WD.players=[];WD.pos={};for(const id of Object.keys(WD.remote))wDrop(id);WD.remote={};if(had&&!NW.peer)vcStop()}
 function wJoined(){vcHook();vcSync();try{toast('🌐 Online: other drivers can see you',2.5)}catch(e){}setTimeout(()=>{if(WD.on&&!VC.stream)micOn()},600)}
-const g_car=()=>{try{return Lv.car}catch(e){return 'fiat'}};
+const g_car=()=>{try{return Lv.car}catch(e){return 'oldcar'}};
 const wRid=()=>'w'+Math.random().toString(36).slice(2,9);
-const wClean=p=>({id:String(p.id).slice(0,16),name:String(p.name||'Driver').slice(0,14),car:CARSHOP[p.car]?p.car:'fiat',pid:String(p.pid||'')});
+const wClean=p=>({id:String(p.id).slice(0,16),name:String(p.name||'Driver').slice(0,14),car:CARSHOP[p.car]?p.car:'oldcar',pid:String(p.pid||'')});
 function wAddP(pl){if(pl&&pl.id!=WD.id&&!WD.players.some(p=>p.id==pl.id))WD.players.push(pl)}
 /* mesh: every driver is connected straight to every other driver. The "room creator" only introduces newcomers; if it leaves, the others keep playing and one of them takes over the introducing. */
 function wLink(pl){if(!WD.peer||!pl.pid||pl.id==WD.id||WD.mesh[pl.id])return;const sess=WD.sess,c=WD.peer.connect(pl.pid,{reliable:true});c.mid=pl.id;
@@ -516,7 +516,7 @@ function wEnter(){if(WD.busy||WD.on)return;WD.busy=true;const sess=++WD.sess;WD.
   q.on('error',e=>{WD.err=e.type;if(e.type=='peer-unavailable')nxt();else if(!WD.on&&!done)fail()})};
  needPeer(()=>{if(sess!=WD.sess)return;tryK(1)},()=>{WD.busy=false;WD.err='no-lib';WD.retryAt=Date.now()+15000})}
 function wSendNear(m,except,px,pz){const big=WD.players.length>16;for(const k of Object.keys(WD.mesh)){if(k==except)continue;if(big){const p=WD.pos[k];if(p&&Math.hypot(p.x-px,p.z-pz)>FAR)continue}try{WD.mesh[k].send(m)}catch(e){}}}
-function wMake(pl){const key=CARSHOP[pl.car]?pl.car:'fiat',o={id:pl.id,name:pl.name,car:key,out:0,v:0,dl:0,nit:0,fl:0,x:0,z:0,h:0,tx:0,tz:0,th:0,tv:0,tdl:0,snd:null};
+function wMake(pl){const key=CARSHOP[pl.car]?pl.car:'oldcar',o={id:pl.id,name:pl.name,car:key,out:0,v:0,dl:0,nit:0,fl:0,x:0,z:0,h:0,tx:0,tz:0,th:0,tv:0,tdl:0,snd:null};
  try{o.mesh=mkCar(CARS[key],1);const hh=(PR[key]&&PR[key].userData.h)||1.5;try{o.tag=tagSprite(pl.name);o.tag.position.set(0,hh+1.1,0);o.mesh.add(o.tag)}catch(e){}sc.add(o.mesh)}catch(e){o.mesh=null}return o}
 function wApply(d){if(!d||d.id==WD.id)return;const pl=WD.players.find(p=>p.id==d.id);if(!pl)return;let o=WD.remote[d.id];if(!o){if(Math.hypot(+d.x-x,+d.z-z)>FAR)return;o=wMake(pl);if(!o.mesh)return;WD.remote[d.id]=o;o.x=o.tx=+d.x;o.z=o.tz=+d.z;o.h=o.th=+d.h}
  o.tx=+d.x;o.tz=+d.z;o.th=+d.h;o.tv=+d.v||0;o.tdl=+d.d||0;o.fl=d.f|0;o.seen=WD.t}

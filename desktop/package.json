@@ -1,13 +1,13 @@
 {
-  "name": "loco-n-drive-3d",
+  "name": "loco-n-drive",
   "version": "1.0.0",
   "description": "Loco n Drive 3D desktop app",
-  "author": "Loco n Drive",
+  "author": "Jitarth Satija",
   "main": "main.js",
   "devDependencies": { "electron": "^33.0.0", "electron-builder": "^25.1.8" },
   "build": {
-    "appId": "com.roadready.desktop",
-    "productName": "Loco n Drive 3D",
+    "appId": "com.loco.drive",
+    "productName": "Loco 'n' Drive",
     "files": ["main.js", "site.json", "icon.png"],
     "extraResources": [{ "from": "game", "to": "game" }],
     "win": { "target": "nsis", "icon": "icon.png" },

@@ -680,7 +680,7 @@ function buildNetwork(L){const T=THREE;const S=(g,m,a,b,c)=>{const q=new T.Mesh(
    const ptx=canv(64,64,q=>{const g=q.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(255,225,150,1)');g.addColorStop(.45,'rgba(255,205,120,.45)');g.addColorStop(1,'rgba(255,190,100,0)');q.fillStyle=g;q.fillRect(0,0,64,64)});
    const pg2=new T.PlaneGeometry(17,17);pg2.rotateX(-Math.PI/2);
    const pm=new T.MeshBasicMaterial({map:ptx,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending});
-   const dd=new T.Object3D(),dp=new T.Object3D(),SP=200,OFF=RINGW/2+1.6,PER=8;
+   const dd=new T.Object3D(),dp=new T.Object3D(),SP=250,OFF=RINGW/2+1.6,PER=8;
    const mkChunk=sm=>{ /* sm = list of ring indices of this chunk; builds the meshes now */
     const L=[],B=[],P=[];
     for(const i of sm){const a=RING[i],b=RING[(i+1)%n];let tx=b.x-a.x,tz=b.z-a.z;const l=Math.hypot(tx,tz)||1;tx/=l;tz/=l;

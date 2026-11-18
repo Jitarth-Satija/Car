@@ -239,6 +239,12 @@ function drawT(i,k,n){const o=sigT[i],q=o.c.getContext('2d');q.fillStyle='#0a0a0
 let prog=0;try{prog=+localStorage.getItem('rr3')||0}catch(e){}
 /* ===== BALANCE / GARAGE (saved in localStorage, shared by car and train) ===== */
 const STO={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const unEsc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function askName(next){
+ if(STO.g('rr3name'))return next();
+ ov('<div class="box" style="text-align:center"><img src="logo.png" alt="" style="width:150px;max-width:50%;border-radius:18px;display:block;margin:0 auto 8px"><h1>Loco ’n’ Drive 3D</h1><h2 style="margin-top:6px">👋 Welcome</h2><p>Enter your username. It is used in races, open world and free tour, and you can change it later.</p><label class="rlb" style="text-align:left">Username</label><input class="rin" id="unm" maxlength="14" placeholder="Your username" autocomplete="off"><p id="unerr" style="color:#ff8a7e;min-height:22px;margin:0"></p><button class="btn" id="unb" style="display:block;width:100%;margin:8px 0">Save &amp; Continue</button></div>');
+ const go=()=>{const v=$('unm').value.trim().slice(0,14);if(!v){$('unerr').textContent='Please enter a username';return}STO.s('rr3name',v);next()};
+ $('unb').onclick=go;$('unm').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')go()};setTimeout(()=>{try{$('unm').focus()}catch(e){}},50)}
 let BAL=STO.g('rr3bal')===null?null:(+STO.g('rr3bal')||0);
 const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
 function setBal(v){BAL=Math.max(0,Math.round(v));STO.s('rr3bal',BAL)}
@@ -962,9 +968,9 @@ function garage(M,i,free){
   const nm=k=>car?MODELS[k].n:TRSHOP[k].n,spd=k=>car?CARSHOP[k].top:LIMS[k].max;
   let pv=sel(),msg='';
   const draw=()=>{
-   ov('<div class="box"><h2>'+(car?'🚗 Choose your car':'🚆 Choose your train')+' <small style="float:right;color:#7dff9b">💰 '+inr(BAL)+'</small></h2><div id="pvh"></div><p id="gm" style="min-height:22px;color:#ffd34d">'+msg+'</p><div id="gl2">'+keys.map(k=>{const o=own().includes(k);return `<div class="gr${k==pv?' on':''}${k==sel()?' sel':''}" data-k="${k}"><span><strong>${nm(k)}</strong><small>Top speed ${spd(k)} km/h · ${o?(k==sel()?'✅ Selected':'Owned'):(price(k)?inr(price(k)):'Free')}</small></span>${o?(k==sel()?'':'<button class="btn s" data-a="s">Select</button>'):'<button class="btn" data-a="b">Buy '+inr(price(k))+'</button>'}</div>`}).join('')+'</div><button class="btn" id="go2" '+(own().includes(sel())?'':'disabled')+'>▶ Start '+(free?'free tour':'level '+(i+1))+' with '+nm(sel())+'</button></div>');
+   ov('<div class="box"><h2>'+(car?'🚗 Choose your car':'🚆 Choose your train')+' <small style="float:right;color:#7dff9b">💰 '+inr(BAL)+'</small></h2><label class="rlb">Username</label><input class="rin" id="gun" maxlength="14" placeholder="Your username" value="'+unEsc(STO.g('rr3name')||'')+'"><div id="pvh"></div><p id="gm" style="min-height:22px;color:#ffd34d">'+msg+'</p><div id="gl2">'+keys.map(k=>{const o=own().includes(k);return `<div class="gr${k==pv?' on':''}${k==sel()?' sel':''}" data-k="${k}"><span><strong>${nm(k)}</strong><small>Top speed ${spd(k)} km/h · ${o?(k==sel()?'✅ Selected':'Owned'):(price(k)?inr(price(k)):'Free')}</small></span>${o?(k==sel()?'':'<button class="btn s" data-a="s">Select</button>'):'<button class="btn" data-a="b">Buy '+inr(price(k))+'</button>'}</div>`}).join('')+'</div><button class="btn" id="go2" '+(own().includes(sel())?'':'disabled')+'>▶ Start '+(free?'free tour':'level '+(i+1))+' with '+nm(sel())+'</button></div>');
    BACKF=()=>menu(M);$('bk').hidden=false;$('bk').onclick=()=>menu(M);
-   $('pvh').appendChild(pvInit().c);
+   $('pvh').appendChild(pvInit().c);$('gun').oninput=e=>{const v=e.target.value.trim().slice(0,14);if(v)STO.s('rr3name',v)};$('gun').onkeydown=e=>e.stopPropagation();
    document.querySelectorAll('.gr').forEach(r=>{const k=r.dataset.k;r.onclick=e=>{const a=e.target.dataset.a;if(a=='s'){if(car){SELC=k;STO.s('rr3car',k)}else{SELT=k;STO.s('rr3trs',k)}msg=nm(k)+' selected';pv=k;draw();return}
      if(a=='b'){if(BAL<price(k)){msg='Not enough balance for '+nm(k)+'. Earn '+inr(price(k)-BAL)+' more.';draw();return}setBal(BAL-price(k));own().push(k);STO.s(car?'rr3cars':'rr3trn',JSON.stringify(own()));if(car){SELC=k;STO.s('rr3car',k)}else{SELT=k;STO.s('rr3trs',k)}msg='Bought '+nm(k)+'!';pv=k;draw();return}
      pv=k;showPv();document.querySelectorAll('.gr').forEach(x=>x.classList.toggle('on',x.dataset.k==k))}});
@@ -1244,8 +1250,8 @@ window.inputChoice=function(){
 };
 window.ramChoice=function(){
  ov('<div class="box"><img src="logo.png" alt="" style="width:150px;max-width:50%;border-radius:18px;display:block;margin:0 auto 8px"><h1>Loco ’n’ Drive 3D</h1><p>Choose your device memory</p><button class="btn" id="ramHi" style="display:block;width:100%;margin:8px 0">🚀 High RAM (best graphics)</button><button class="btn s" id="ramLo" style="display:block;width:100%;margin:8px 0">🐢 Low RAM (2 GB TV / weak device)</button></div>');
- document.getElementById('ramHi').onclick=()=>{LITE=false;AD='assets/';window.RACE_JOIN?RACE.deepJoin():inputChoice()};
- document.getElementById('ramLo').onclick=()=>{LITE=true;AD='assets_lite/';window.RACE_JOIN?RACE.deepJoin():inputChoice()};
+ document.getElementById('ramHi').onclick=()=>{LITE=false;AD='assets/';askName(()=>window.RACE_JOIN?RACE.deepJoin():inputChoice())};
+ document.getElementById('ramLo').onclick=()=>{LITE=true;AD='assets_lite/';askName(()=>window.RACE_JOIN?RACE.deepJoin():inputChoice())};
 };
 ramChoice();
 })();

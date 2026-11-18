@@ -3,7 +3,7 @@
  "appName": "Loco ’n’ Drive 3D",
  "webDir": "www",
  "server": {
-  "url": "https://YOUR-SITE.pages.dev",
+  "url": "https://loco-n-drive.pages.dev/",
   "cleartext": false
  },
  "android": {

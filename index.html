@@ -801,11 +801,36 @@ const NUMW=['zero','one','two','three','four','five','six','seven','eight','nine
 const HNUM=['शून्य','एक','दो','तीन','चार','पाँच','छह','सात','आठ','नौ'],numH=no=>String(no).split('').map(c=>HNUM[+c]).join(' ');
 function speak(txt,x0,z0,hi){if(!window.speechSynthesis)return;let vol=1;if(x0!==undefined){const d=Math.hypot(cam.position.x-x0,cam.position.z-z0);if(d>140)return;vol=.95*Math.pow(1-d/140,1.4)+.05}if(vol<.06)return;if(VQN>=4)return;
  try{const u=new SpeechSynthesisUtterance(txt);u.rate=hi?.9:.93;u.pitch=1.25;u.volume=vol;if(!FV)pickVoice();if(hi){u.lang='hi-IN';if(HV){u.voice=HV;u.lang=HV.lang}}else{u.lang='en-IN';if(FV){u.voice=FV;u.lang=FV.lang}}VQN++;u.onend=u.onerror=()=>{VQN=Math.max(0,VQN-1)};speechSynthesis.speak(u)}catch(e){}}
-const ANNW={arr:['arriving on','platform number','आ रही है'],stand:['standing on','platform number','खड़ी है'],ready:['ready to move from','platform number','से चलने को तैयार है'],go:['now going from','platform number','से चली गई है']};
+const ANNW={arr:['arriving on','platform number','आ रही है','aa rahi hai'],stand:['standing on','platform number','खड़ी है','khadi hai'],ready:['ready to move from','platform number','से चलने को तैयार है','se chalne ko taiyaar hai'],go:['now going from','platform number','से जा रही है','se ja rahi hai']};
+const HR=['shoonya','ek','do','teen','chaar','paanch','chhah','saat','aath','nau'],numR=no=>String(no).split('').map(c=>HR[+c]).join(' '),pfH=p=>p>9?'दस':HNUM[p],pfR=p=>p>9?'das':HR[p];
 const HN={'VANDE BHARAT EXPRESS':'वंदे भारत एक्सप्रेस','RAJDHANI EXPRESS':'राजधानी एक्सप्रेस','SHATABDI EXPRESS':'शताब्दी एक्सप्रेस','GOODS TRAIN (MALGAADI)':'मालगाड़ी','LIGHT ENGINE':'लाइट इंजन','DURONTO EXPRESS':'दुरंतो एक्सप्रेस','GARIB RATH':'गरीब रथ','INTERCITY EXPRESS':'इंटरसिटी एक्सप्रेस','JAN SHATABDI':'जन शताब्दी','SUPERFAST EXPRESS':'सुपरफास्ट एक्सप्रेस','MAIL EXPRESS':'मेल एक्सप्रेस','SAMPARK KRANTI':'संपर्क क्रांति एक्सप्रेस','HUMSAFAR EXPRESS':'हमसफ़र एक्सप्रेस'};
-const annX=(tr,q,own,k)=>{const pf=q.st.pf[tr.lane.id.slice(-1)],w=ANNW[k],x0=own?undefined:q.st.x,z0=own?undefined:q.st.z,hp=(k=='arr'||k=='stand')?'प्लेटफ़ॉर्म क्रमांक '+HNUM[pf]+' पर '+w[2]:'प्लेटफ़ॉर्म क्रमांक '+HNUM[pf]+' '+w[2];
- speak('कृपया ध्यान दीजिए, गाड़ी संख्या '+numH(tr.no)+', '+(HN[tr.nm]||tr.nm)+', '+hp+'।',x0,z0,1);
- speak('Attention please! Train number '+numW(tr.no)+', '+tr.nm.replace(/\(.*\)/,'').toLowerCase()+', is '+w[0]+' platform number '+pf+'.',x0,z0,0)};
+/* ---- Hindi announcement from recorded clips in hindi.js. Works on every device; falls back to speech until hindi.js has loaded ---- */
+/* the clips live in hindi.js (uploaded next to index.html); it is loaded the first time an announcement plays */
+const HFILES={'VANDE BHARAT EXPRESS':'vande','RAJDHANI EXPRESS':'rajdhani','SHATABDI EXPRESS':'shatabdi','GOODS TRAIN (MALGAADI)':'goods','LIGHT ENGINE':'light_engine','DURONTO EXPRESS':'duronto','GARIB RATH':'garib_rath','INTERCITY EXPRESS':'intercity','JAN SHATABDI':'jan_shatabdi','SUPERFAST EXPRESS':'superfast','MAIL EXPRESS':'mail','SAMPARK KRANTI':'sampark','HUMSAFAR EXPRESS':'humsafar'};
+const HB={};let HLOAD=0,HREADY=0;const HGAP=.02;
+function loadHClips(){if(HLOAD||typeof AC==='undefined'||!AC)return;HLOAD=1;if(!window.HDATA){const sc=document.createElement('script');sc.src='hindi.js';sc.onload=()=>{HLOAD=0;if(window.HDATA)loadHClips();else HLOAD=1};sc.onerror=()=>{HLOAD=1};document.head.appendChild(sc);return}const HDATA=window.HDATA,names=Object.keys(HDATA);if(!names.length)return;
+ Promise.all(names.map(n=>{try{const bin=atob(HDATA[n]),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return AC.decodeAudioData(u.buffer).then(b=>{HB[n]=b}).catch(()=>{})}catch(e){return 0}})).then(()=>{HREADY=(HB.intro&&HB.pf)?1:0})}
+/* returns the length in seconds when the clips were used (0 = too far away to hear), or null when speech must be used */
+function hclip(tr,pf,k,x0,z0){loadHClips();if(!HREADY||!AC||VQN>=4)return null;const nf=HFILES[tr.nm];if(!nf)return null;
+ const seq=['intro'].concat(String(tr.no).split('').map(c=>'d'+c),['n_'+nf,'pf',pf>9?'p10':'d'+pf,k]),bs=seq.map(n=>HB[n]);if(bs.some(b=>!b))return null;
+ let vol=1;if(x0!==undefined){const d=Math.hypot(cam.position.x-x0,cam.position.z-z0);if(d>140)return 0;vol=.95*Math.pow(1-d/140,1.4)+.05}if(vol<.06)return 0;
+ try{if(AC.state=='suspended')AC.resume();const g=AC.createGain();g.gain.value=vol;g.connect(AC.destination);let t=AC.currentTime+.05,last=null,tot=.05;for(const b of bs){const s=AC.createBufferSource();s.buffer=b;s.connect(g);s.start(t);const st=Math.max(.1,b.duration-HGAP);t+=st;tot+=st;last=s}VQN++;last.onended=()=>{VQN=Math.max(0,VQN-1)};return tot+HGAP}catch(e){return null}}
+/* Hindi via the device's own Hindi voice. okcb runs when it finished; failcb when there is no Hindi voice, it errored or never started */
+function speakHi(txt,x0,z0,okcb,failcb){
+ if(!window.speechSynthesis||!HV){failcb();return}
+ let vol=1;if(x0!==undefined){const d=Math.hypot(cam.position.x-x0,cam.position.z-z0);if(d>140)return;vol=.95*Math.pow(1-d/140,1.4)+.05}if(vol<.06||VQN>=4)return;
+ let st=0,fin=0,tm=0;const done=f=>{if(fin)return;fin=1;clearTimeout(tm);VQN=Math.max(0,VQN-1);f()};
+ try{const u=new SpeechSynthesisUtterance(txt);u.rate=.9;u.pitch=1.25;u.volume=vol;u.voice=HV;u.lang=HV.lang;
+  u.onstart=()=>{st=1;clearTimeout(tm)};u.onend=()=>done(okcb);u.onerror=()=>done(failcb);
+  VQN++;tm=setTimeout(()=>{if(!st){try{speechSynthesis.cancel()}catch(e){}done(failcb)}},(speechSynthesis.speaking||speechSynthesis.pending)?9000:2500);
+  speechSynthesis.speak(u)}catch(e){done(failcb)}}
+/* order: 1) device Hindi voice  2) recorded clips from hindi.js  3) Hindi written in English letters, spoken by the English voice */
+const annX=(tr,q,own,k)=>{const pf=q.st.pf[tr.lane.id.slice(-1)],w=ANNW[k],x0=own?undefined:q.st.x,z0=own?undefined:q.st.z,on=(k=='arr'||k=='stand'),hp=on?'प्लेटफ़ॉर्म क्रमांक '+pfH(pf)+' पर '+w[2]:'प्लेटफ़ॉर्म क्रमांक '+pfH(pf)+' '+w[2];
+ const nm=tr.nm.replace(/\(.*\)/,'').toLowerCase();
+ const doEn=()=>speak('Attention please! Train number '+numW(tr.no)+', '+nm+', is '+w[0]+' platform number '+pf+'.',x0,z0,0);
+ const viaClips=()=>{const hd=hclip(tr,pf,k,x0,z0);if(hd!==null)setTimeout(doEn,hd*1000+250);else{speak('Kripya dhyan deejiye, gaadi sankhya '+numR(tr.no)+', '+nm+', platform kramaank '+pfR(pf)+(on?' par ':' ')+w[3]+'.',x0,z0,0);doEn()}};
+ if(!HV)pickVoice();
+ speakHi('कृपया ध्यान दीजिए, गाड़ी संख्या '+numH(tr.no)+', '+(HN[tr.nm]||tr.nm)+', '+hp+'।',x0,z0,doEn,viaClips)};
 const annArr=(tr,q,own)=>annX(tr,q,own,'arr'),annStand=(tr,q,own)=>annX(tr,q,own,'stand'),annReady=(tr,q,own)=>annX(tr,q,own,'ready'),annGo=(tr,q,own)=>annX(tr,q,own,'go');
 
 

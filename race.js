@@ -228,13 +228,13 @@ R.begin=function(cfg){
   S.active=true;$('rfw').style.display='none';FW.on=false;$('rout').style.display='none';
   ['rpn','rnit','rlb'].forEach(i=>$(i).style.display='block');S.lbH='';S.lbT=0;S.lastRank=0;$('rvc').style.display=S.mode=='net'?'block':'none';$('rbig').style.display='grid';$('rbig').textContent='';vcUI();
   toast('Fasten the seatbelt (B), start the engine (I), lights (L) at night, select gear 1. Hold Shift / N for nitro',7);
-  cam.position.set(x,4,z);aud();try{loadHorn()}catch(e){}S.cdN=99;S.waitT=0;if(S.mode=='net'){S.phase='wait';S.cd=12;if(NW.host)S.rdy.host=1;else if(NW.conn&&NW.conn.open)try{NW.conn.send({t:'rdy'})}catch(e){};if(S.pendGo){S.pendGo=false;S.phase='count'}}},40))};
+  cam.position.set(x,4,z);aud();try{loadHorn()}catch(e){}S.cdN=99;S.waitT=0;if(S.mode=='net'){S.phase='wait';S.cd=12;if(NW.host)S.rdy.host=1;else if(NW.conn&&NW.conn.open)try{NW.conn.send({t:'rdy'})}catch(e){};if(S.pendGo){S.pendGo=false;S.phase='count';if(S.pendCd>0)S.cd=S.pendCd;S.pendCd=0}}},40))};
 function go(){S.phase='race';S.raceT=0;try{nb(.45,2600,.9,'lowpass',1);tone(160,.3,'sine',.4)}catch(e){}$('rbig').textContent='GO!';setTimeout(()=>{if(S.phase=='race')$('rbig').textContent=''},900)}
 
 /* ---------- per-frame race logic (called from the main loop after step()) ---------- */
 R.tick=function(dt){
  if(!S.active)return;const me=S.me;if(!me)return;S.dt=dt;S.tt+=dt;
- if(S.phase=='wait'){S.waitT+=dt;if(NW.host){S.pgT=(S.pgT||0)-dt;if(S.pgT<=0){S.pgT=.4;bcast({t:'png',ts:performance.now()})}hostGoCheck()}else if(S.waitT>30){S.phase='count';S.cd=12;S.cdN=99}}else if(S.phase=='count'){S.cd-=dt;const n=Math.ceil(S.cd);if(S.cd<=3&&n!=S.cdN&&n>0){S.cdN=n;$('rbig').textContent=n;try{tone(520,.18,'square',.14)}catch(e){}}if(S.cd<=0)go()}
+ if(S.phase=='wait'){S.waitT+=dt;if(NW.host){S.pgT=(S.pgT||0)-dt;if(S.pgT<=0){S.pgT=.4;bcast({t:'png',ts:performance.now()})}hostGoCheck()}else if(S.waitT>30){S.phase='count';S.cd=12;S.cdN=99}}else if(S.phase=='count'){S.cd-=dt;if(S.mode=='net'&&NW.host&&S.cd>.4){S.cpT=(S.cpT||0)-dt;if(S.cpT<=0){S.cpT=1;Object.values(NW.conns).forEach(c=>{const L=c.rtt!=null?Math.min(1.5,c.rtt/2000):0;try{c.send({t:'cdn',cd:S.cd-L})}catch(e){}})}}const n=Math.ceil(S.cd);if(S.cd<=3&&n!=S.cdN&&n>0){S.cdN=n;$('rbig').textContent=n;try{tone(520,.18,'square',.14)}catch(e){}}if(S.cd<=0)go()}
  else if(S.phase=='race')S.raceT+=dt;
  const live=S.phase=='race';sndListener();
  /* my progress along the ring */
@@ -438,6 +438,7 @@ function clientData(d,bad){if(!d||typeof d!='object')return;
  else if(d.t=='st'){const o=S.cars.find(x=>x.id==d.id);if(o&&!o.me&&!o.out){o.tprog=+d.p||0;o.tlat=+d.l||0;o.tv=+d.v||0;o.tdl=+d.d||0;o.tyaw=+d.y||0;o.nit=d.n?1:0;o.fl=d.f|0}}
  else if(d.t=='out')applyOut(d.id);
  else if(d.t=='png'){try{NW.conn.send({t:'pog',ts:d.ts})}catch(e){}}
+ else if(d.t=='cdn'){const v=+d.cd;if(v>0&&v<=12){if(S.active&&S.phase=='wait'){S.phase='count';S.cd=v;S.cdN=99}else if(S.active&&S.phase=='count'){S.cd=v}else if(!S.active){S.pendGo=true;S.pendCd=v}}}
  else if(d.t=='go'){if(S.active&&S.phase=='wait'){S.phase='count';S.cd=d.cd>0?d.cd:12;S.cdN=99}else S.pendGo=true}
  else if(d.t=='ocd'){NW.cd=d.cd;updCd()}
  else if(d.t=='chat')chatAdd(d.name,d.text);

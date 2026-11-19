@@ -823,30 +823,31 @@ function speakTry(txt,x0,z0,v,okcb,failcb){
   u.onstart=()=>{st=1;clearTimeout(tm)};u.onend=()=>done(okcb);u.onerror=()=>done(failcb);
   VQN++;tm=setTimeout(()=>{if(!st){try{speechSynthesis.cancel()}catch(e){}done(failcb)}},(speechSynthesis.speaking||speechSynthesis.pending)?9000:2500);
   speechSynthesis.speak(u)}catch(e){done(failcb)}}
-/* ---- recorded phrases (upload the 3 .wav files next to index.html): "kripya dhyan dijiye" + "gaadi sankhya" + <number in Roman Hindi> + "platform kramaank" + <number and rest in Roman Hindi> ---- */
-const WAVS={a:'kripya_dhyan_dijiye.wav',b:'gaadi_sankhya.wav',c:'platform_kramaank.wav'};let WA=null,WBAD=0;
-function wavPlay(key,vol,okcb,failcb){
- if(!WA){WA={};for(const k in WAVS){try{const e=new Audio(WAVS[k]);e.preload='auto';WA[k]=e}catch(x){}}}
- const base=WA[key];if(!base){failcb();return}
- let fin=0,tm=0;const a=base.cloneNode();const done=f=>{if(fin)return;fin=1;clearTimeout(tm);a.onended=a.onerror=a.onplaying=null;f()};
- a.volume=vol;a.onended=()=>done(okcb);a.onerror=()=>{WBAD=1;done(failcb)};a.onplaying=()=>clearTimeout(tm);
- tm=setTimeout(()=>{try{a.pause()}catch(e){}done(failcb)},5000);
- try{const pr=a.play();if(pr&&pr.catch)pr.catch(()=>done(failcb))}catch(e){done(failcb)}}
-/* order: 0) the 3 recorded .wav phrases + Roman Hindi  (if the .wav files are missing, the chain below)
-   1) device Hindi voice  2) Hindi in English letters, English voice  3) recorded clips from hindi.js (base64) */
+/* ---- main method: pure Hindi WAV set hi_*.wav (made by generate_hindi_wavs.py, uploaded to the site root) ----
+   hi_intro -> train number digits (hi_n0..9) -> train name (hi_name_*) -> hi_pf -> platform number (hi_n1..10) -> hi_end_* */
+const HW={};let HWST=0,HWOK=0;
+function loadHW(){if(HWST||typeof AC==='undefined'||!AC)return;HWST=1;
+ const nms=['intro','pf','end_arr','end_stand','end_ready','end_go'].concat([0,1,2,3,4,5,6,7,8,9,10].map(i=>'n'+i),Object.values(HFILES).map(f=>'name_'+f));
+ const get=n=>fetch('hi_'+n+'.wav').then(r=>{if(!r.ok||/text\/html/i.test(r.headers.get('content-type')||''))throw 0;return r.arrayBuffer()}).then(b=>AC.decodeAudioData(b));
+ Promise.all(nms.map(n=>get(n).then(b=>{HW[n]=b}).catch(()=>{}))).then(()=>{HWOK=(HW.intro&&HW.pf&&HW.end_arr&&HW.n1)?1:0})}
+setInterval(()=>{if(!HWST)loadHW()},2000);
+/* returns the length in seconds when the WAV set was used (0 = too far to hear), or null when it is not available */
+function hwPlay(tr,pf,k,x0,z0){loadHW();if(!HWOK||!AC||VQN>=4)return null;const nf=HFILES[tr.nm];if(!nf)return null;
+ const ds=String(tr.no).split('').map(c=>'n'+c),seq=['intro'].concat(ds,['name_'+nf,'pf','n'+pf,'end_'+k]),bs=seq.map(n=>HW[n]);if(bs.some(b=>!b))return null;
+ /* pause (seconds) after each part: short between digits, longer before and after the train name */
+ const gp=seq.map((n,i)=>i==0?.12:/^n\d$/.test(n)&&i<=ds.length?(i==ds.length?.3:.12):/^name_/.test(n)?.3:n=='pf'?.1:/^n\d+$/.test(n)?.06:0);
+ let vol=1;if(x0!==undefined){const d=Math.hypot(cam.position.x-x0,cam.position.z-z0);if(d>140)return 0;vol=.95*Math.pow(1-d/140,1.4)+.05}if(vol<.06)return 0;
+ try{if(AC.state=='suspended')AC.resume();const g=AC.createGain();g.gain.value=vol;g.connect(AC.destination);let t=AC.currentTime+.05,last=null;for(let i=0;i<bs.length;i++){const sn=AC.createBufferSource();sn.buffer=bs[i];sn.connect(g);sn.start(t);t+=bs[i].duration+gp[i];last=sn}VQN++;last.onended=()=>{VQN=Math.max(0,VQN-1)};return t-AC.currentTime}catch(e){return null}}
+/* order: 0) pure Hindi WAV set  (if it is missing / not loaded yet, the chain below)
+   1) device Hindi voice  2) Hindi in English letters, English voice  3) recorded clips from hindi.js (base64, if that file is uploaded) */
 const annX=(tr,q,own,k)=>{const pf=q.st.pf[tr.lane.id.slice(-1)],w=ANNW[k],x0=own?undefined:q.st.x,z0=own?undefined:q.st.z,on=(k=='arr'||k=='stand'),hp=on?'प्लेटफ़ॉर्म क्रमांक '+pfH(pf)+' पर '+w[2]:'प्लेटफ़ॉर्म क्रमांक '+pfH(pf)+' '+w[2];
  const nm=tr.nm.replace(/\(.*\)/,'').toLowerCase();
  const doEn=()=>speak('Attention please! Train number '+numW(tr.no)+', '+nm+', is '+w[0]+' platform number '+pf+'.',x0,z0,0);
  const viaClips=()=>{const hd=hclip(tr,pf,k,x0,z0);if(hd!==null)setTimeout(doEn,hd*1000+250);else doEn()};
  const viaRoman=()=>{if(!FV)pickVoice();speakTry('Kripya dhyan deejiye, gaadi sankhya '+numR(tr.no)+', '+nm+', platform kramaank '+pfR(pf)+(on?' par ':' ')+w[3]+'.',x0,z0,FV,doEn,viaClips)};
  const chain=()=>{if(!HV)pickVoice();speakTry('कृपया ध्यान दीजिए, गाड़ी संख्या '+numH(tr.no)+', '+(HN[tr.nm]||tr.nm)+', '+hp+'।',x0,z0,HV,doEn,viaRoman)};
- if(WBAD){chain();return}
- let vol=1;if(x0!==undefined){const d=Math.hypot(cam.position.x-x0,cam.position.z-z0);if(d>140)return;vol=.95*Math.pow(1-d/140,1.4)+.05}if(vol<.06)return;
- if(!FV)pickVoice();
- const say=(t,nx)=>speakTry(t,x0,z0,FV,nx,nx);
- const sC=()=>say(pfR(pf)+(on?' par ':' ')+w[3],doEn),stepC=()=>wavPlay('c',vol,sC,sC);
- const sB=()=>say(numR(tr.no)+', '+nm,stepC),stepB=()=>wavPlay('b',vol,sB,sB);
- wavPlay('a',vol,stepB,chain)};
+ const hd=hwPlay(tr,pf,k,x0,z0);if(hd!==null){setTimeout(doEn,hd*1000+300);return}
+ chain()};
 const annArr=(tr,q,own)=>annX(tr,q,own,'arr'),annStand=(tr,q,own)=>annX(tr,q,own,'stand'),annReady=(tr,q,own)=>annX(tr,q,own,'ready'),annGo=(tr,q,own)=>annX(tr,q,own,'go');
 
 
